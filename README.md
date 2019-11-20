@@ -1,6 +1,6 @@
 # CCTube (cctube-app)
 
-## Instalar dependencias
+## Instalar dependencias (NodeJS 12.13.0)
 ```bash
 npm install
 ```
