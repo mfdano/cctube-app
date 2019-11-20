@@ -1,6 +1,6 @@
 # CCTube (cctube-app)
 
-## Install the dependencies
+## Instalar dependencias
 ```bash
 npm install
 ```
