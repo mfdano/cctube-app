@@ -64,20 +64,19 @@
                 </q-card>
               </div>
             </div>
+            <div class="row justify-center q-mt-md">
+              <q-btn-group rounded>
+                <q-btn color="primary" :disabled="prevPageToken == null" rounded label="Anterior" icon="keyboard_arrow_left" @click="onChangePage(false)" />
+                <q-btn color="primary" :disabled="nextPageToken == null" rounded label="Siguiente" icon-right="keyboard_arrow_right" @click="onChangePage(true)"/>
+              </q-btn-group>
+            </div>
           </q-page>
-          <div class="row justify-center">
-            <q-btn-group rounded>
-              <q-btn color="primary" rounded icon="keyboard_arrow_left" />
-              <q-btn color="primary" rounded label="1" />
-              <q-btn color="primary" rounded icon="keyboard_arrow_right" />
-            </q-btn-group>
-          </div>
         </div>
       </div>
     </q-page-container>
     <q-ajax-bar
       ref="bar"
-      position="bottom"
+      position="top"
       color="accent"
       size="9px"
       skip-hijack
@@ -114,12 +113,21 @@ export default {
       isFourCols: false,
       videoModal: false,
       currentVideoURL: null,
-      pages: [],
-      nextPageToken: null
+      numOfPages: 1,
+      nextPageToken: null,
+      prevPageToken: null
     }
   },
 
   methods: {
+    onChangePage: async function (toNext) {
+      if (!toNext) {
+        this.nextPageToken = this.prevPageToken
+      }
+      this.triggerBar()
+      await this.searchVideo()
+      this.$refs.bar.stop()
+    },
     onShowVideo: function (videoId) {
       this.currentVideoURL = 'https://www.youtube.com/embed/' + videoId
       this.videoModal = true
@@ -140,11 +148,14 @@ export default {
       try {
         let response = await axiosInstance.get('/channels/' + this.channelId + '/videos', {
           params: {
-            query: this.videoQueryText
+            query: this.videoQueryText,
+            pageToken: this.nextPageToken
           }
         })
         this.videos = response.data.items
-        this.nextPageToken = response.data.etag.nextPageToken
+        this.nextPageToken = response.data.nextPageToken
+        this.prevPageToken = response.data.prevPageToken
+        this.numOfPages = response.data.pageInfo.totalResults / response.data.pageInfo.resultsPerPage
       } catch (e) {
         console.log(e)
       } finally {
